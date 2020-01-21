@@ -109,7 +109,6 @@ def upload_file():
 		if entered == True:
 			var_sel = request.args.get('map_vars')
 			idx = cols_out.index(var_sel)-1
-			print(var_sel)
 			output, cov_output, map_vars = centroid_bin_avg_func(df_out, x_dim, y_dim, idx)
 			return(render_template('uploaded.html', filename=output, cov_filename=cov_output, map_vars=map_vars, selected_var=var_sel))
 	if request.method == 'POST':
