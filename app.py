@@ -2,13 +2,9 @@ import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from PIL import Image
-from flask_table import Table, Col
-import uuid
-import time
 from scipy import stats
 import secrets
 
