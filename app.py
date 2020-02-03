@@ -29,14 +29,14 @@ def headers_and_dropdown_func(txt_file_name):
 	column_headers.insert(0,'Select a variable to map')
 	return df, column_headers
 
-def centroid_bin_avg_func(dataframe, x_dim, y_dim, var_idx):
+def centroid_bin_avg_func(dataframe, x_dim, y_dim, x_idx, y_idx, var_idx):
 	df = dataframe
 	column_headers = list(df.columns.values) 
 	x_dim_round = round(x_dim/50)*50
 	y_dim_round = round(y_dim/50)*50
 
-	centroid_x_df = df.iloc[:,3]
-	centroid_y_df = df.iloc[:,4]
+	centroid_x_df = df.iloc[:,x_idx]
+	centroid_y_df = df.iloc[:,y_idx]
 	centroid_x = centroid_x_df.astype(float)
 	centroid_y = centroid_y_df.astype(float)
 
@@ -95,6 +95,20 @@ def centroid_bin_avg_func(dataframe, x_dim, y_dim, var_idx):
 	cov_image.save(os.path.join(app.config['UPLOAD_FOLDER'], cov_fname))
 
 	return mean_fname, cov_fname, column_headers
+def verify_float(dataframe, all_possible_vars):
+	verified_float_cols = [all_possible_vars[0]]
+	verified_float_idx = [0]
+	df = dataframe
+	for i in range(1,len(all_possible_vars)):
+		s1 = df.iloc[0,i-1]
+		if isinstance(s1, np.float64) and not np.isnan(s1):
+			verified_float_cols.append(all_possible_vars[i])
+			verified_float_idx.append(i-1)
+			if 'Centroid X' in all_possible_vars[i]:
+				x_idx = i-1
+			elif 'Centroid Y' in all_possible_vars[i]:
+				y_idx = i-1
+	return verified_float_cols, verified_float_idx, x_idx, y_idx
 
 global entered
 entered = False
@@ -105,12 +119,19 @@ def upload_file():
 	global entered
 	global x_dim
 	global y_dim
+	global float_cols
+	global float_idx
+	global centroid_x_idx
+	global centroid_y_idx
 	if request.method == 'GET':
 		if entered == True:
 			var_sel = request.args.get('map_vars')
-			idx = cols_out.index(var_sel)-1
-			output, cov_output, map_vars = centroid_bin_avg_func(df_out, x_dim, y_dim, idx)
-			return(render_template('uploaded.html', filename=output, cov_filename=cov_output, map_vars=map_vars, selected_var=var_sel))
+			df_idx = float_idx[float_cols.index(var_sel)]
+			if df_idx == 0:
+				flash('Select a valid variable to map')
+				return redirect(request.url)
+			output, cov_output, map_vars = centroid_bin_avg_func(df_out, x_dim, y_dim, centroid_x_idx, centroid_y_idx, df_idx)	
+			return(render_template('uploaded.html', filename=output, cov_filename=cov_output, map_vars=float_cols, selected_var=var_sel))
 	if request.method == 'POST':
 		# check if the post request has the file part
 		if 'file' not in request.files:
@@ -135,8 +156,9 @@ def upload_file():
 			df_out, cols_out = headers_and_dropdown_func(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			entered = True
+			float_cols, float_idx, centroid_x_idx, centroid_y_idx = verify_float(df_out, cols_out)
 
-			return(render_template('uploaded.html', map_vars = cols_out))
+			return(render_template('uploaded.html', map_vars = float_cols))
 	return render_template('uploaded.html')
 
 @app.route('/', methods=['POST'])
