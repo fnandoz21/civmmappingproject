@@ -20,6 +20,7 @@ input[type="submit"]{
   /* change these properties to whatever you want */
   color: white;
   background-color: #282936;
+  border: none;
   border-radius: 1.625rem;
   padding: 8px 20px;
   font-family: 'Mukta', sans-serif;
