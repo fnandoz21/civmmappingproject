@@ -81,20 +81,25 @@ def centroid_bin_avg_func(dataframe, x_dim, y_dim, x_idx, y_idx, var_idx):
 	var_cov = np.nan_to_num(var_cov)
 
 	mean_fname = secrets.token_urlsafe(16) + '.tif'
+	mean_fname_data = secrets.token_urlsafe(16) + '.csv'
 	im_mean = var_avg*255
 	im_mean = np.flip(np.flip(im_mean),1)
 	mean_image = Image.fromarray(np.uint8(im_mean), mode='L')
 	mean_image.save(os.path.join(app.config['UPLOAD_FOLDER'], mean_fname))
+	np.savetxt(os.path.join(app.config['UPLOAD_FOLDER'], mean_fname_data), var_avg, delimiter=',')
 
 	cov_fname = secrets.token_urlsafe(16) + '.tif'
+	cov_fname_data = secrets.token_urlsafe(16) + '.csv'
 	min_cov_val = np.amin(var_cov)
 	max_cov_val = np.amax(var_cov)
 	im_cov = var_cov*255/max_cov_val
 	im_cov = np.flip(np.flip(im_cov),1)
 	cov_image = Image.fromarray(np.uint8(im_cov), mode='L')
 	cov_image.save(os.path.join(app.config['UPLOAD_FOLDER'], cov_fname))
+	np.savetxt(os.path.join(app.config['UPLOAD_FOLDER'], cov_fname_data), var_cov, delimiter=',')
 
-	return mean_fname, cov_fname, column_headers
+	return mean_fname, cov_fname, mean_fname_data, cov_fname_data, column_headers
+
 def verify_float(dataframe, all_possible_vars):
 	verified_float_cols = [all_possible_vars[0]]
 	verified_float_idx = [0]
@@ -130,8 +135,8 @@ def upload_file():
 			if df_idx == 0:
 				flash('Select a valid variable to map')
 				return redirect(request.url)
-			output, cov_output, map_vars = centroid_bin_avg_func(df_out, x_dim, y_dim, centroid_x_idx, centroid_y_idx, df_idx)	
-			return(render_template('uploaded.html', filename=output, cov_filename=cov_output, map_vars=float_cols, selected_var=var_sel))
+			mean_output, cov_output, mean_csv, cov_csv, map_vars = centroid_bin_avg_func(df_out, x_dim, y_dim, centroid_x_idx, centroid_y_idx, df_idx)	
+			return(render_template('uploaded.html', mean_filename=mean_output, cov_filename=cov_output, mean_csv_filename = mean_csv, cov_csv_filename = cov_csv, map_vars=float_cols, selected_var=var_sel))
 	if request.method == 'POST':
 		# check if the post request has the file part
 		if 'file' not in request.files:
