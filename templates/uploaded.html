@@ -9,8 +9,8 @@
 	<h3 id = "onlyh3">Attach your data as a .txt file and type in the dimensions of the slide in XY order, separated by a comma</h3>
 	<div id = "inputfields">
 	<form class="form-inline" method=post enctype=multipart/form-data>
-	  Data: <input type=file name=file>
-	  Dimensions (X,Y): <input name=text>
+	  Data: <input type=file name=file required>
+	  Dimensions (X,Y): <input name=text required>
 	  <input type=submit value=Submit onclick="toggleVarVal()">
 	</form>
 	</div>
@@ -47,8 +47,14 @@
 				<span class="circle">
 				  <span class="icon arrow"></span>
 				</span>
-				<span class="button-text">Download map</span>
+				<span class="button-text">Download Map</span>
 		</button>
+		<button onclick="something" class="learn-more" id="csv">
+			<span class="circle">
+			  <span class="icon arrow"></span>
+			</span>
+			<span class="button-text">Download CSV</span>
+	</button>
 	</div>
 
 	<script>
@@ -57,12 +63,26 @@
 				selected_val = this.value;
 
 				document.getElementById('mati').onclick = function(){
-					if (selected_val == "circ_mean")
-					{
-						location.href =  '{{ url_for('uploaded_file', filename=filename) }}';
+					if('{{selected_var}}' != null){
+						if (selected_val == "circ_mean")
+						{
+							location.href =  '{{ url_for('uploaded_file', filename=mean_filename) }}';
+						}
+						if(selected_val == "circ_cov"){
+							location.href = '{{ url_for('uploaded_file', filename=cov_filename) }}';
+						}
 					}
-					if(selected_val == "circ_cov"){
-						location.href = '{{ url_for('uploaded_file', filename=cov_filename) }}';
+				}
+
+				document.getElementById('csv').onclick = function(){
+					if('{{selected_var}}' != null){
+						if (selected_val == "circ_mean")
+						{
+							location.href =  '{{ url_for('uploaded_file', filename=mean_csv_filename) }}';
+						}
+						if(selected_val == "circ_cov"){
+							location.href = '{{ url_for('uploaded_file', filename=cov_csv_filename) }}';
+						}
 					}
 				}
 			}
